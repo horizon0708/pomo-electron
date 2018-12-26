@@ -8,12 +8,17 @@
     "@types/node": "10.12.18",
     "@types/react": "16.7.18",
     "@types/react-dom": "16.0.11",
+    "babel-polyfill": "^6.26.0",
     "guid-typescript": "^1.0.9",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
+    "pouchdb-adapter-http": "^7.0.0",
+    "pouchdb-adapter-websql": "^7.0.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-scripts": "2.1.2",
+    "rxdb": "^8.0.4",
+    "rxjs": "^6.3.3",
     "typescript": "3.2.2"
   },
   "scripts": {
