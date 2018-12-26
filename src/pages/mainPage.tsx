@@ -1,7 +1,7 @@
 import React from 'react'
 // import { PomoConsumer } from '../App';
 import { observer, inject } from 'mobx-react'
-import PomoStore from '../pomoStore';
+import PomoStore from '../stores/pomoStore';
 import PomoTimer from '../components/pomoTimer';
 
 @inject("store")

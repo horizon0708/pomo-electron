@@ -1,6 +1,5 @@
 
 export function milliseceondToMinuteSeconds(ms: number): PomoTime {
-    console.log(ms)
     const pureSeconds = Math.floor(ms / 1000)
     const minutes = Math.floor( pureSeconds / 60 )
     const seconds = pureSeconds % 60

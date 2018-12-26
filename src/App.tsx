@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import PomoStore from './pomoStore';
+import PomoStore from './stores/pomoStore';
 import MainPage from './pages/mainPage';
 import { Provider } from 'mobx-react';
 
