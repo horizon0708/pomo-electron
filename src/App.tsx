@@ -1,28 +1,26 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import PomoStore from './pomoStore';
+import MainPage from './pages/mainPage';
+import { Provider } from 'mobx-react';
+
+// const {Provider, Consumer} = React.createContext<PomoStore>(new PomoStore())
 
 class App extends Component {
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <Provider store={new PomoStore} >
+      
+        <MainPage />
+      </Provider>
+
     );
   }
 }
+
+// export const PomoProvider = Provider
+
+// export const PomoConsumer = Consumer
 
 export default App;
