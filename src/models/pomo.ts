@@ -38,6 +38,8 @@ export class Pomo {
         this.currentTime = 0
     }
 
+
+
     @action to(state: PomoStatus) {
         this.previousStatus = this.status
         this.status = state
@@ -56,14 +58,23 @@ export class ProjectTime {
 }
 
 export enum PomoStatus {
-    start = "START",
-    inProgress ="IN_PROGRESS",
-    inPause="IN_PAUSE",
-    inBreak="IN_BREAK",
-    workDone="WORK_DONE",
-    allDone="ALL_DONE",
-    deleted="DELETED"
+    start,
+    inProgress,
+    inPause,
+    inBreak,
+    workDone,
+    allDone,
+    deleted
 }
+// export enum PomoStatus {
+//     start = "start",
+//     inProgress = "inProgress",
+//     inPause = "inPause",
+//     inBreak = "inBreak",
+//     workDone = "workDone",
+//     allDone = "allDone",
+//     deleted = "deleted"
+// }
 
 export class PomoTimestamp {
     public startTime: Date
