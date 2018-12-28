@@ -24,25 +24,27 @@ export class PomoManager {
         //     this.onStateChange(this.currentPomo.previousStatus, this.currentPomo.status)
         // })
 
-        reaction(()=> {
+        reaction(() => {
             return {
                 prev: this.currentPomo.previousStatus,
                 next: this.currentPomo.status
             }
-        }, o =>{
+        }, o => {
             console.log(o.prev + "->" + o.next)
             this.onStateChange(o.prev, o.next)
         })
 
-        reaction(()=> this.currentPomo.currentTime, ()=> {
+        reaction(() => this.currentPomo.currentTime, () => {
             this.onTimeUp()
         })
 
-        reaction(()=> this._currentPomo, t => {
-            if(t) {
-                this.cache.save(t)
-            }
-        })
+        // reaction(() => this._currentPomo, t => {
+        //     if (t) {
+        //         this.cache.save(t)
+        //     }
+        // })
+
+
 
         // when(()=> this.isBreaktimeUp, ()=> {
         //     this.onTimeUp()
@@ -54,16 +56,21 @@ export class PomoManager {
     }
 
     @computed get currentPomo(): Pomo {
-        if(this._currentPomo) return this._currentPomo
-        // this._currentPomo = this.cache.load()
-        this._currentPomo = new Pomo()
-        
+        if (this._currentPomo) return this._currentPomo
+        this._currentPomo = this.cache.load()
+        // this._currentPomo = new Pomo()
+
+        this.currentPause = [...this._currentPomo.pauseTimestamps].pop()
         return this._currentPomo
     }
 
     public to(state: PomoStatus) {
+        if(state === PomoStatus.inBreak){
+            this.currentPomo.currentTime = 0    
+        }
         this.currentPomo.to(state)
         console.log("to: " + state)
+
     }
 
     addPomo(): Pomo {
@@ -86,6 +93,8 @@ export class PomoManager {
         }
         if (pomo.status === PomoStatus.inBreak && pomo.currentTime >= this.config.breakDuration) {
             console.log('on time up')
+            console.log(pomo.currentTime)
+            clearInterval(this.timer)
             this.to(PomoStatus.allDone)
         }
     }
@@ -93,6 +102,8 @@ export class PomoManager {
     onStateChange(previousStatus: PomoStatus, status: PomoStatus) {
         // start timer
         console.log("STATE CHANGE: " + previousStatus.toString() + "-->" + status.toString())
+
+
         if (previousStatus === PomoStatus.start && status === PomoStatus.inProgress) {
             this.onStart()
         }
@@ -113,12 +124,18 @@ export class PomoManager {
     }
 
     onStart() {
-        console.log('statechange')
-        this.timerStartTime = this.currentPomo.timestamp.startTime
-        this.timer = window.setInterval(() => {
+        this.currentPomo.timestamp.startTime = new Date()
+        this.timer = this.startTimer(this.currentPomo.timestamp.startTime)
+    }
+
+    startTimer(startTime: Date): number {
+        console.log(" ** TIMER STARTED ** ")
+        this.timerStartTime = startTime
+        return window.setInterval(() => {
             if (this.currentPomo.status !== PomoStatus.inPause) {
                 const time = (new Date().getTime() - this.timerStartTime.getTime()) + this.currentPomo.workDurations
                 this.currentPomo.currentTime = time
+                this.cache.save(this.currentPomo)
             }
         }, 333)
     }
@@ -135,16 +152,22 @@ export class PomoManager {
         }
         this.currentPause.endTime = new Date()
         this.timerStartTime = new Date()
+        if (!this.timer) {
+            // this.startTimer(new Date())
+        }
     }
 
     onBreak() {
         console.log("BREAK START")
         clearInterval(this.timer)
         this.timerStartTime = new Date()
+        this.currentPomo.currentTime = 0
         this.timer = window.setInterval(() => {
-            if (this.currentPomo.status !== PomoStatus.inPause) {
+            if (this.currentPomo.status !== PomoStatus.inPause && this.currentPomo.status === PomoStatus.inBreak) {
                 const time = (new Date().getTime() - this.timerStartTime.getTime())
                 this.currentPomo.currentTime = time
+            console.log(this.currentPomo.currentTime)
+                this.cache.save(this.currentPomo)
             }
         }, 333)
     }
@@ -161,17 +184,23 @@ export class PomoManager {
         this.nextPomo()
         clearInterval(this.timer)
         this.to(PomoStatus.start)
+        console.log(this.timer)
+    }
+
+    resetCurrentPomo() {
+        this._currentPomo = new Pomo()
     }
 
     skipPomo() {
         // when user ends pomo early, do things ?
-        
+
     }
 
     nextPomo() {
         // send pomo to db, and start a new pomo in localStorage/  memory
-        this.repo.addPomo(this.currentPomo) 
+        this.repo.addPomo(this.currentPomo)
         this.cache.reset()
         this._currentPomo = new Pomo()
+        console.log(this._currentPomo)
     }
 }

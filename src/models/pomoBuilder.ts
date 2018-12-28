@@ -8,16 +8,16 @@ export default class PomoBuilder {
     buildFromJSON(json: any): Pomo {
         let pomo = new Pomo()
         try {
-            pomo.id = json.id
+            pomo.id = json.id.value
             pomo.timestamp = json.timestamp && this.timestampFromJSON(json.timestamp) || new PomoTimestamp()
             pomo.breakTimestamp = json.breakTimestamp && this.timestampFromJSON(json.breakTimestamp)
             pomo.pauseTimestamps = json.pauseTimestamps 
                 && json.pauseTimestamps.map((x: string) => this.timestampFromJSON(x)) 
             pomo.projects = json.projects
             pomo.status = json.status
-            pomo.currentTime = json.currentTIme
+            pomo.currentTime = json.currentTime
             pomo.previousStatus = json.previousStatus
-            console.log(pomo.timestamp)
+            console.log(json.currentTime)
             return pomo
         } catch (error) {
             console.error(error)            

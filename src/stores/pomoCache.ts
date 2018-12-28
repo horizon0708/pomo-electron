@@ -11,7 +11,8 @@ export default class PomoCache {
     const _pomo = Object.assign({}, pomo)
     _pomo.status = PomoStatus.inPause
     _pomo.previousStatus = PomoStatus.inPause
-    _pomo.pauseTimestamps.push(new PomoTimestamp(new Date()))
+    _pomo.pauseTimestamps = [..._pomo.pauseTimestamps, new PomoTimestamp()]
+    _pomo.currentTime = 0
     const value = JSON.stringify(_pomo);
     localStorage.setItem(currentPomo, value);
   }
@@ -27,6 +28,6 @@ export default class PomoCache {
   }
 
   reset() {
-    localStorage.setItem(currentPomo, JSON.stringify(new Pomo()))
+    localStorage.removeItem(currentPomo)
   }
 }
