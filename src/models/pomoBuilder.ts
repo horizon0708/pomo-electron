@@ -1,6 +1,7 @@
 import { schemaPomo, schemaTimestamp } from "../stores/database";
 import { Pomo, PomoTimestamp, PomoStatus } from "./pomo";
 import { Guid } from "guid-typescript";
+import { string } from "prop-types";
 
 export default class PomoBuilder {
 
@@ -8,18 +9,30 @@ export default class PomoBuilder {
         let pomo = new Pomo()
         try {
             pomo.id = json.id
-            pomo.timestamp = json.timestamp
-            pomo.breakTimestamp = json.breakTimestamp
-            pomo.pauseTimestamps = json.pauseTimestamps
+            pomo.timestamp = json.timestamp && this.timestampFromJSON(json.timestamp) || new PomoTimestamp()
+            pomo.breakTimestamp = json.breakTimestamp && this.timestampFromJSON(json.breakTimestamp)
+            pomo.pauseTimestamps = json.pauseTimestamps 
+                && json.pauseTimestamps.map((x: string) => this.timestampFromJSON(x)) 
             pomo.projects = json.projects
             pomo.status = json.status
             pomo.currentTime = json.currentTIme
             pomo.previousStatus = json.previousStatus
+            console.log(pomo.timestamp)
             return pomo
         } catch (error) {
             console.error(error)            
             return new Pomo()
         }
+    }
+
+    // converting to json implicitly converts date string into ISO format that screws stuff up.
+    private timestampFromJSON(ts: any) {
+        if(ts.startTime && ts.endTime){
+            return new PomoTimestamp(new Date(ts.startTime), new Date(ts.endTime))
+        }
+        // probably better way than
+        console.error("date format error")
+        return undefined 
     }
 
     buildFromSchema(item: schemaPomo): Pomo {

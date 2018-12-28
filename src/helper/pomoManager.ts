@@ -13,7 +13,7 @@ export class PomoManager {
     private timerStartTime: Date = new Date()
     private currentPause?: PomoTimestamp
     private cache = new PomoCache()
-    private _currentPomo?: Pomo
+    @observable private _currentPomo?: Pomo
     private repo: PomoRepository
 
     constructor(pomos: Pomo[], config: PomoConfig, repo: PomoRepository) {
@@ -38,6 +38,12 @@ export class PomoManager {
             this.onTimeUp()
         })
 
+        reaction(()=> this._currentPomo, t => {
+            if(t) {
+                this.cache.save(t)
+            }
+        })
+
         // when(()=> this.isBreaktimeUp, ()=> {
         //     this.onTimeUp()
         // })
@@ -47,10 +53,11 @@ export class PomoManager {
         return this.currentPomo.status === PomoStatus.inBreak && this.currentPomo.currentTime >= this.config.breakDuration
     }
 
-    get currentPomo() {
+    @computed get currentPomo(): Pomo {
         if(this._currentPomo) return this._currentPomo
-        this._currentPomo = this.cache.load()
-        console.log(this._currentPomo)
+        // this._currentPomo = this.cache.load()
+        this._currentPomo = new Pomo()
+        
         return this._currentPomo
     }
 
@@ -85,6 +92,7 @@ export class PomoManager {
 
     onStateChange(previousStatus: PomoStatus, status: PomoStatus) {
         // start timer
+        console.log("STATE CHANGE: " + previousStatus.toString() + "-->" + status.toString())
         if (previousStatus === PomoStatus.start && status === PomoStatus.inProgress) {
             this.onStart()
         }
@@ -110,7 +118,6 @@ export class PomoManager {
         this.timer = window.setInterval(() => {
             if (this.currentPomo.status !== PomoStatus.inPause) {
                 const time = (new Date().getTime() - this.timerStartTime.getTime()) + this.currentPomo.workDurations
-                console.log(this.currentPomo)
                 this.currentPomo.currentTime = time
             }
         }, 333)
@@ -153,6 +160,7 @@ export class PomoManager {
         console.log("END")
         this.nextPomo()
         clearInterval(this.timer)
+        this.to(PomoStatus.start)
     }
 
     skipPomo() {

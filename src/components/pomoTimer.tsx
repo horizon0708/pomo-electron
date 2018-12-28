@@ -57,6 +57,7 @@ export default class PomoTimer extends React.Component<PomoTimerProps, {}> {
         }
         const { pomoManager } = this.props.store
         const current = milliseceondToMinuteSeconds(pomoManager.currentPomo.currentTime)
+        console.log(pomoManager.currentPomo.currentTime)
         return <div>
             status: {pomoManager.currentPomo.status}
             {current.minutes} : {current.seconds}

@@ -19,13 +19,13 @@ export default class PomoRepository {
         if(this.db) return this.db
 
         this.db = await getDatabase('idb')
-        const syncState = await this.db.pomos.sync({
-            remote: syncURL,
-            direction: {
-                pull: true,
-                push: true
-            }
-        })
+        // const syncState = await this.db.pomos.sync({
+        //     remote: syncURL,
+        //     direction: {
+        //         pull: true,
+        //         push: true
+        //     }
+        // })
 
         // seed one pomo ?
         // const testPomo = this.mapper.toDB(new Pomo())

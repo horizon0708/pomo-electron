@@ -1,4 +1,4 @@
-import { Pomo } from "../models/pomo";
+import { Pomo, PomoStatus, PomoTimestamp } from "../models/pomo";
 import PomoBuilder from "../models/pomoBuilder";
 
 const currentPomo = "CURRENT_POMO";
@@ -6,8 +6,13 @@ const currentPomo = "CURRENT_POMO";
 export default class PomoCache {
   builder = new PomoBuilder();
 
+  // need to save as paused state, inorder for the timer to work properly
   save(pomo: Pomo) {
-    const value = JSON.stringify(pomo);
+    const _pomo = Object.assign({}, pomo)
+    _pomo.status = PomoStatus.inPause
+    _pomo.previousStatus = PomoStatus.inPause
+    _pomo.pauseTimestamps.push(new PomoTimestamp(new Date()))
+    const value = JSON.stringify(_pomo);
     localStorage.setItem(currentPomo, value);
   }
 
