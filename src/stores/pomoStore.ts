@@ -12,7 +12,7 @@ export default class PomoStore {
     repository = new PomoRepository()
 
     constructor() {
-        this.pomoManager = new PomoManager(this.pomos, this.config)
+        this.pomoManager = new PomoManager(this.pomos, this.config, this.repository)
         this.startAllPomoSubscription()
 
         // this.repository.allPomosPromise && this.repository.allPomosPromise().then(res => {
@@ -38,14 +38,6 @@ export default class PomoStore {
             .filter(p => p.status !== PomoStatus.deleted)
             .filter(p => p.status === PomoStatus.allDone).length
     }
-
-    @computed get currentPomo() {
-        if (this.pomos.length > 0 && this.pomos[0].status === PomoStatus.start) {
-            return this.pomos[0]
-        }
-        return this.addPomo()
-    }
-
 
     @computed get allPomosCount() { return this.pomos.length }
 

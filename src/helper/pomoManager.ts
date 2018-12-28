@@ -2,6 +2,8 @@ import { Pomo, PomoStatus, PomoTimestamp } from "../models/pomo";
 import PomoConfig from "../models/pomoConfig";
 import { autorun, reaction, action, observable, computed, when } from "mobx";
 import { timerStatus } from "../models/pomoStatus";
+import PomoCache from '../stores/pomoCache';
+import PomoRepository from '../stores/pomoRepository';
 
 
 export class PomoManager {
@@ -10,11 +12,14 @@ export class PomoManager {
     private timer?: number
     private timerStartTime: Date = new Date()
     private currentPause?: PomoTimestamp
+    private cache = new PomoCache()
+    private _currentPomo?: Pomo
+    private repo: PomoRepository
 
-    constructor(pomos: Pomo[], config: PomoConfig) {
+    constructor(pomos: Pomo[], config: PomoConfig, repo: PomoRepository) {
         this.pomos = pomos
         this.config = config
-
+        this.repo = repo
         // autorun(() => {
         //     this.onStateChange(this.currentPomo.previousStatus, this.currentPomo.status)
         // })
@@ -43,10 +48,10 @@ export class PomoManager {
     }
 
     get currentPomo() {
-        return this.pomos.length > 0
-            && this.pomos[0].status !== PomoStatus.deleted ?
-            this.pomos[0] :
-            this.addPomo()
+        if(this._currentPomo) return this._currentPomo
+        this._currentPomo = this.cache.load()
+        console.log(this._currentPomo)
+        return this._currentPomo
     }
 
     public to(state: PomoStatus) {
@@ -105,6 +110,7 @@ export class PomoManager {
         this.timer = window.setInterval(() => {
             if (this.currentPomo.status !== PomoStatus.inPause) {
                 const time = (new Date().getTime() - this.timerStartTime.getTime()) + this.currentPomo.workDurations
+                console.log(this.currentPomo)
                 this.currentPomo.currentTime = time
             }
         }, 333)
@@ -145,6 +151,19 @@ export class PomoManager {
 
     onAllEnd() {
         console.log("END")
+        this.nextPomo()
         clearInterval(this.timer)
+    }
+
+    skipPomo() {
+        // when user ends pomo early, do things ?
+        
+    }
+
+    nextPomo() {
+        // send pomo to db, and start a new pomo in localStorage/  memory
+        this.repo.addPomo(this.currentPomo) 
+        this.cache.reset()
+        this._currentPomo = new Pomo()
     }
 }

@@ -64,4 +64,10 @@ export default class PomoRepository {
         //  .sort("timestamp.startTime")
             .exec()
     }
+
+    async addPomo(pomo: Pomo) {
+        const db = await this.getDb()
+        const data = this.mapper.builder.exportToSchema(pomo)
+        db.pomos.insert({ ...data })
+    }
 }

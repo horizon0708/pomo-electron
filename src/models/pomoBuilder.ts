@@ -4,6 +4,24 @@ import { Guid } from "guid-typescript";
 
 export default class PomoBuilder {
 
+    buildFromJSON(json: any): Pomo {
+        let pomo = new Pomo()
+        try {
+            pomo.id = json.id
+            pomo.timestamp = json.timestamp
+            pomo.breakTimestamp = json.breakTimestamp
+            pomo.pauseTimestamps = json.pauseTimestamps
+            pomo.projects = json.projects
+            pomo.status = json.status
+            pomo.currentTime = json.currentTIme
+            pomo.previousStatus = json.previousStatus
+            return pomo
+        } catch (error) {
+            console.error(error)            
+            return new Pomo()
+        }
+    }
+
     buildFromSchema(item: schemaPomo): Pomo {
         let pomo = new Pomo()
         pomo.id = Guid.parse(item.id)
