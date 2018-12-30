@@ -1,3 +1,4 @@
+import { PomoInterruptionReason } from "./pomoInterruption";
 
 export default class PomoConfig {
     public pomoDuration:number = 1 * 60 * 1000
@@ -5,4 +6,5 @@ export default class PomoConfig {
     public notifyOnEnd = true;
     public soundOnEnd = true;
     public autoStartAfterBreak = false;
+    public interruptionReasons: PomoInterruptionReason[] = []
 } 

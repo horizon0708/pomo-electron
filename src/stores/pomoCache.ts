@@ -1,5 +1,5 @@
 import { Pomo, PomoStatus, PomoTimestamp } from "../models/pomo";
-import PomoBuilder from "../models/pomoBuilder";
+import PomoBuilder from "../helper/pomoBuilder";
 
 const currentPomo = "CURRENT_POMO";
 
@@ -22,9 +22,29 @@ export default class PomoCache {
     if (output) {
       const json = JSON.parse(output);
       console.log(json)
-      return this.builder.buildFromJSON(json);
+      const pomo = this.validateJSON(json)
+      console.log("validating json")
+      if(!pomo || pomo.currentTime < 3000) return new Pomo()
+      pomo.currentTime = pomo.workDurations
+      console.log("loaded a pomo from local storage!")
+      return pomo
     }
     return new Pomo()
+  }
+  
+  validateJSON(json: any): Pomo | null {
+    const fieldExists =
+      json.id 
+      && json.timestamp
+      && json.pauseTimestamps
+      && json.projects
+      && json.status
+      && json.previousStatus
+
+      if(fieldExists) {
+        return this.builder.buildFromJSON(json)
+      }
+      return null
   }
 
   reset() {

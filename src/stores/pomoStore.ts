@@ -2,18 +2,26 @@ import { Pomo, PomoStatus } from "../models/pomo"
 import { observable, computed, autorun, action } from "mobx"
 import PomoConfig from "../models/pomoConfig";
 import { PomoManager } from "../helper/pomoManager";
-import PomoRepository from "./pomoRepository";
+import PomoRepository from "../repositories/pomoRepository";
 import { RxQuery } from "rxdb";
+import ProjectRepository from "../repositories/projectRepository";
+import Project from "../models/project";
+import ProjectManager from "../helper/projectManager";
 
 export default class PomoStore {
     @observable pomos: Pomo[] = []
+    @observable projects: Project[] = []
     config = new PomoConfig()
     pomoManager: PomoManager
-    repository = new PomoRepository()
+    ProjectManager: ProjectManager
+    pomoRepository = new PomoRepository()
+    projectRepository = new ProjectRepository()
 
     constructor() {
-        this.pomoManager = new PomoManager(this.pomos, this.config, this.repository)
+        this.pomoManager = new PomoManager(this.pomos, this.config, this.pomoRepository)
+        this.ProjectManager = new ProjectManager(this.config, this.projectRepository, this.pomoRepository)
         this.startAllPomoSubscription()
+        this.startAllProjectSubscription()
 
         // this.repository.allPomosPromise && this.repository.allPomosPromise().then(res => {
         //     const data = res.map(r => {
@@ -24,12 +32,20 @@ export default class PomoStore {
     }
 
     async startAllPomoSubscription() {
-        const pomoSubscription = await this.repository.getAllPomos()
+        const pomoSubscription = await this.pomoRepository.getAllPomos()
         pomoSubscription.subscribe(res => {
             const json = res.map(r=>r.toJSON())
-            this.pomos = json.map(j => this.repository.mapper.fromDB(j))
+            this.pomos = json.map(j => this.pomoRepository.mapper.fromDB(j))
             console.log(json)
             
+        })
+    }
+
+    async startAllProjectSubscription() {
+        const sub = await this.projectRepository.getAllProjects()
+        sub.subscribe(res => {
+            // TODO: convert from json when converted from mock
+            this.projects = res
         })
     }
 

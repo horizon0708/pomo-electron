@@ -3,6 +3,7 @@ import { observer, inject } from 'mobx-react';
 import PomoStore from '../stores/pomoStore';
 import { PomoStatus } from '../models/pomo';
 import { milliseceondToMinuteSeconds } from '../helper/timeHelper';
+import { PomoManager } from '../helper/pomoManager';
 
 @inject("store")
 @observer
@@ -28,7 +29,7 @@ export default class PomoTimer extends React.Component<PomoTimerProps, {}> {
             case PomoStatus.inProgress || PomoStatus.inBreak:
                 return <button onClick={() => pomoManager.to(PomoStatus.inPause)}>pause</button>
             case PomoStatus.allDone:
-                return <button onClick={()=> pomoManager.addPomo()}>start next session</button>
+                return <button onClick={()=> pomoManager.nextPomo()}>start next session</button>
             default:
                 return null
         }
@@ -57,13 +58,18 @@ export default class PomoTimer extends React.Component<PomoTimerProps, {}> {
         }
         const { pomoManager: {currentPomo } } = this.props.store
         const { pomoManager } = this.props.store
-        const current = milliseceondToMinuteSeconds(currentPomo.currentTime)
+        const { currentTime} = currentPomo
+        const current = milliseceondToMinuteSeconds(currentTime)
         return <div>
             status: {pomoManager.currentPomo.status}
             {current.minutes} : {current.seconds}
             {this.renderButtons()}
             {this.renderBreakButton()}
             {pomoManager.isOvertime ? "overtime" : null}
+            <div>
+                {currentPomo.currentTime}
+            </div>
+            <button onClick={()=>pomoManager.resetCurrentPomo()}>reset currentPomo</button>
         </div>
     }
 

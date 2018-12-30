@@ -1,15 +1,20 @@
 import { Guid } from "guid-typescript"
 import { observable, action, computed } from "mobx";
+import Project from "./project";
+import PomoInterruption from "./pomoInterruption";
 
 export class Pomo {
     @observable public id: Guid
     @observable public timestamp: PomoTimestamp
     @observable public breakTimestamp?: PomoTimestamp
     @observable public pauseTimestamps: PomoTimestamp[]
-    @observable public projects: ProjectTime[]
+    @observable public project?: Project
     @observable public status: PomoStatus
     @observable public currentTime: number
     @observable public previousStatus: PomoStatus
+    @observable public rating: number
+    @observable public interruptions: PomoInterruption[] = []
+
     @computed get workDurations() {
         if (this.pauseTimestamps.length > 0) {
             let total = 0;
@@ -28,14 +33,15 @@ export class Pomo {
         return 0
     }
 
-    constructor(startingProject?: ProjectTime) {
+    constructor(startingProject?: Project) {
         this.id = Guid.create()
         this.timestamp = new PomoTimestamp()
         this.pauseTimestamps = []
-        this.projects = startingProject ? [startingProject] : []
+        this.project = startingProject 
         this.status = PomoStatus.start
         this.previousStatus = this.status
         this.currentTime = 0
+        this.rating = 3
     }
 
 

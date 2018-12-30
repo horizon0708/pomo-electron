@@ -1,9 +1,8 @@
 import { Pomo, PomoStatus, PomoTimestamp } from "../models/pomo";
 import PomoConfig from "../models/pomoConfig";
 import { autorun, reaction, action, observable, computed, when } from "mobx";
-import { timerStatus } from "../models/pomoStatus";
 import PomoCache from '../stores/pomoCache';
-import PomoRepository from '../stores/pomoRepository';
+import PomoRepository from '../repositories/pomoRepository';
 
 
 export class PomoManager {
@@ -24,31 +23,21 @@ export class PomoManager {
         //     this.onStateChange(this.currentPomo.previousStatus, this.currentPomo.status)
         // })
 
+        this.timer = this.startTimer(new Date())
+
         reaction(() => {
             return {
                 prev: this.currentPomo.previousStatus,
                 next: this.currentPomo.status
             }
         }, o => {
-            console.log(o.prev + "->" + o.next)
             this.onStateChange(o.prev, o.next)
         })
 
         reaction(() => this.currentPomo.currentTime, () => {
             this.onTimeUp()
+            this.cache.save(this.currentPomo)
         })
-
-        // reaction(() => this._currentPomo, t => {
-        //     if (t) {
-        //         this.cache.save(t)
-        //     }
-        // })
-
-
-
-        // when(()=> this.isBreaktimeUp, ()=> {
-        //     this.onTimeUp()
-        // })
     }
 
     @computed get isBreaktimeUp() {
@@ -65,24 +54,14 @@ export class PomoManager {
     }
 
     public to(state: PomoStatus) {
-        if(state === PomoStatus.inBreak){
-            this.currentPomo.currentTime = 0    
+        if (state === PomoStatus.inBreak) {
+            this.currentPomo.currentTime = 0
         }
         this.currentPomo.to(state)
         console.log("to: " + state)
 
     }
 
-    addPomo(): Pomo {
-        const pomoToAdd = new Pomo()
-        this.pomos.forEach(p => {
-            if (p.status !== PomoStatus.allDone && p.status !== PomoStatus.deleted) {
-                p.status = PomoStatus.allDone
-            }
-        })
-        this.pomos.unshift(pomoToAdd)
-        return pomoToAdd
-    }
 
     onTimeUp() {
         const pomo = this.currentPomo
@@ -94,7 +73,6 @@ export class PomoManager {
         if (pomo.status === PomoStatus.inBreak && pomo.currentTime >= this.config.breakDuration) {
             console.log('on time up')
             console.log(pomo.currentTime)
-            clearInterval(this.timer)
             this.to(PomoStatus.allDone)
         }
     }
@@ -125,17 +103,22 @@ export class PomoManager {
 
     onStart() {
         this.currentPomo.timestamp.startTime = new Date()
-        this.timer = this.startTimer(this.currentPomo.timestamp.startTime)
+        this.timerStartTime = new Date()
     }
 
     startTimer(startTime: Date): number {
         console.log(" ** TIMER STARTED ** ")
-        this.timerStartTime = startTime
         return window.setInterval(() => {
             if (this.currentPomo.status !== PomoStatus.inPause) {
-                const time = (new Date().getTime() - this.timerStartTime.getTime()) + this.currentPomo.workDurations
-                this.currentPomo.currentTime = time
-                this.cache.save(this.currentPomo)
+                if (this.currentPomo.status === PomoStatus.inProgress) {
+                    const time = (new Date().getTime() - this.timerStartTime.getTime()) + this.currentPomo.workDurations
+                    this.currentPomo.currentTime = time
+                }
+                if (this.currentPomo.status === PomoStatus.inBreak) {
+                    const time = (new Date().getTime() - this.timerStartTime.getTime())
+                    this.currentPomo.currentTime = time
+
+                }
             }
         }, 333)
     }
@@ -151,6 +134,9 @@ export class PomoManager {
             return null
         }
         this.currentPause.endTime = new Date()
+        if (this.currentPomo.pauseTimestamps.length > 0) {
+            this.currentPomo.pauseTimestamps[this.currentPomo.pauseTimestamps.length - 1].endTime = this.currentPause.endTime
+        }
         this.timerStartTime = new Date()
         if (!this.timer) {
             // this.startTimer(new Date())
@@ -159,17 +145,8 @@ export class PomoManager {
 
     onBreak() {
         console.log("BREAK START")
-        clearInterval(this.timer)
-        this.timerStartTime = new Date()
         this.currentPomo.currentTime = 0
-        this.timer = window.setInterval(() => {
-            if (this.currentPomo.status !== PomoStatus.inPause && this.currentPomo.status === PomoStatus.inBreak) {
-                const time = (new Date().getTime() - this.timerStartTime.getTime())
-                this.currentPomo.currentTime = time
-            console.log(this.currentPomo.currentTime)
-                this.cache.save(this.currentPomo)
-            }
-        }, 333)
+        this.timerStartTime = new Date()
     }
 
     public get isOvertime() {
@@ -182,12 +159,12 @@ export class PomoManager {
     onAllEnd() {
         console.log("END")
         this.nextPomo()
-        clearInterval(this.timer)
+        // clearInterval(this.timer)
         this.to(PomoStatus.start)
         console.log(this.timer)
     }
 
-    resetCurrentPomo() {
+    public resetCurrentPomo() {
         this._currentPomo = new Pomo()
     }
 
@@ -201,6 +178,5 @@ export class PomoManager {
         this.repo.addPomo(this.currentPomo)
         this.cache.reset()
         this._currentPomo = new Pomo()
-        console.log(this._currentPomo)
     }
 }

@@ -1,5 +1,6 @@
 import RxDB, { RxDatabase } from 'rxdb'
 import { PomoStatus } from '../models/pomo';
+import { ProjectStatus } from '../models/project';
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-adapter-idb'));
 //need to be generated into public (or find a way to build electron into main?)
@@ -22,17 +23,32 @@ export interface schemaTimestamp {
 }
 
 const _pomoProject = {
-    ratio: {
-        type: "number"
-    },
-    projectId: {
-        type: "string"
+    type: 'object',
+    properties: {
+        id: {
+            type: "string"
+        },
+        name: {
+            type: "string"
+        },
+        color: {
+            type: "string"
+        },
+        status: {
+            type: "number"
+        },
+        goal: {
+            type: "number"
+        },
     }
 }
 
 export interface schemaProject{
-    ratio: number
-    projectId: string
+    id: string
+    name: string
+    color: string
+    status: number
+    goal: number
 }
 
 export interface schemaPomo {
@@ -40,7 +56,7 @@ export interface schemaPomo {
     timestamp: schemaTimestamp 
     breakTimestamp?: schemaTimestamp 
     pauseTimestamps?: schemaTimestamp[] 
-    projects: schemaProject[]
+    project?: schemaProject
     status: number
     currentTime: number
     previousStatus: number
@@ -62,10 +78,7 @@ const PomoSchema = {
             type: 'array',
             item: _pomoTimestamp
         } ,
-        projects: {
-            type: 'array',
-            item: _pomoProject
-        },
+        projects: _pomoProject, 
         status: {
             type: 'number'
         },
@@ -85,7 +98,7 @@ export function getDatabase(adapter:string): Promise<RxDatabase> {
     return _getDatabase;
 }
 
-async function createDatabase(adapter:string ) {
+export async function createDatabase(adapter:string ) {
     const db = await RxDB.create({
         name: "pomodb",
         adapter,
