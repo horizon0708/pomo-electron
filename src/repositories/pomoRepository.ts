@@ -1,14 +1,14 @@
 import RxDB, { RxDatabase } from 'rxdb'
 import { getDatabase } from '../stores/database';
-import PomoMapper from '../stores/pomoMapper';
 import { Pomo, PomoStatus } from '../models/pomo';
 import BaseRepository from './BaseRepository';
+import PomoBuilder from '../helper/pomoBuilder';
 
 const syncURL = 'http://localhost:10102/db/pomos'
 
 // class responsible for dealing with DB
 export default class PomoRepository extends BaseRepository{
-    mapper = new PomoMapper()
+    builder: PomoBuilder = new PomoBuilder()
 
     async getAllPomos() {
         const db = await this.getDb() 
@@ -34,7 +34,7 @@ export default class PomoRepository extends BaseRepository{
     // adding shoul be observable maybe
     async addPomo(pomo: Pomo) {
         const db = await this.getDb()
-        const data = this.mapper.builder.exportToSchema(pomo)
+        const data = this.builder.exportToSchema(pomo)
         db.pomos.insert({ ...data })
     }
 }

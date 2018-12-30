@@ -3,11 +3,16 @@ import { getDatabase } from "../stores/database";
 
 
 export default class BaseRepository {
-    db?: RxDatabase
+    private _db?: RxDatabase
+    private dbName = "pomodb"
+
+    constructor(dbName?: string) {
+        if(dbName) this.dbName = dbName
+    }
 
     async getDb() {
-        if (this.db) return this.db
-        this.db = await getDatabase('idb')
+        if (this._db) return this._db
+        this._db = await getDatabase(this.dbName,'idb')
         // const syncState = await this.db.pomos.sync({
         //     remote: syncURL,
         //     direction: {
@@ -15,7 +20,7 @@ export default class BaseRepository {
         //         push: true
         //     }
         // })
-        return this.db
+        return this._db
 
     }
-}
+}   

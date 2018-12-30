@@ -1,11 +1,14 @@
-import { schemaPomo, schemaTimestamp, schemaProject } from "../stores/database";
+import { schemaPomo, schemaTimestamp,   } from "../stores/database";
 import { Pomo, PomoTimestamp, PomoStatus } from "../models/pomo";
 import { Guid } from "guid-typescript";
 import { string } from "prop-types";
 import Project, { ProjectStatus } from "../models/project";
+import PomoInterruption from "../models/pomoInterruption";
+import { schemaInterruption } from "../stores/interruptionSchema";
 
 export default class PomoBuilder {
 
+    // redundant for now
     buildFromJSON(json: any): Pomo {
         let pomo = new Pomo()
         try {
@@ -42,21 +45,14 @@ export default class PomoBuilder {
         pomo.timestamp = item.timestamp && this.convertTimestampFromDB(item.timestamp)
         pomo.breakTimestamp = item.breakTimestamp && this.convertTimestampFromDB(item.breakTimestamp)
         pomo.pauseTimestamps = item.pauseTimestamps && item.pauseTimestamps.map(ts => this.convertTimestampFromDB(ts)) || []
-        pomo.project = this.projectFromSchema(item.project)
+        pomo.project = item.project && Guid.parse(item.project) || undefined
         pomo.status = (<any>PomoStatus)[item.status]
         pomo.currentTime = item.currentTime
         pomo.previousStatus = (<any>PomoStatus)[item.previousStatus]
+        pomo.rating = item.rating
+        pomo.interruptions = item.interruptions.map(x => Guid.parse(x))
         return pomo
     }
-
-    private projectFromSchema(input: any): Project {
-        const { id, name, color, status, goal } = input
-        const opt = {
-            id, name, color, status, goal
-        }
-        return new Project(opt)
-    }
-
 
     exportToSchema(pomo: Pomo): schemaPomo {
         return {
@@ -64,22 +60,14 @@ export default class PomoBuilder {
             timestamp: this.convertTimestampForDB(pomo.timestamp),
             breakTimestamp: pomo.breakTimestamp && this.convertTimestampForDB(pomo.breakTimestamp) || undefined,
             pauseTimestamps: this.convertPausesForDB(pomo.pauseTimestamps),
-            project: pomo.project && this.projectToSchema(pomo.project),
+            project: pomo.project && pomo.project.toString(),
             status: pomo.status,
+            rating: pomo.rating,
+            interruptions: pomo.interruptions.map(x=> x.toString()),
             currentTime: pomo.currentTime,
             previousStatus: pomo.previousStatus
         }
     }
-
-private projectToSchema(project:Project): schemaProject {
-    return {
-        id: project.id.toString(),
-        name: project.name,
-        color: project.color,
-        status: (<any>ProjectStatus)[project.status],
-        goal: project.goal
-    }
-}
 
     private convertPausesForDB(ts: PomoTimestamp[]): schemaTimestamp[] {
         return ts.map(ts => this.convertTimestampForDB(ts))
@@ -96,4 +84,6 @@ private projectToSchema(project:Project): schemaProject {
         return new PomoTimestamp(new Date(ts.startTime), new Date(ts.endTime))
 
     }
+
+
 }

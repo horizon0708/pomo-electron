@@ -2,15 +2,20 @@ import BaseRepository from "./BaseRepository";
 import Project from "../models/project";
 import { Observable, of } from "rxjs";
 import { Guid } from "guid-typescript";
+import ProjectBuilder from "../helper/projectBuilder";
 
 
 export default class ProjectRepository extends BaseRepository {
     //TODO: connect to db
-
-    private mockProjects: Project[] = [new Project({ name: "Test1" }), new Project({ name: "Test2" })]
+    builder: ProjectBuilder = new ProjectBuilder()
+    private mockProjects: Project[] = [new Project("test1"), new Project("test2")]
 
     async getAllProjects(): Promise<Observable<any>> {
-        return of(this.mockProjects)
+        const db = await this.getDb()
+        const query = db.projects
+            .find()
+        
+        return query.$
     }
 
     async getProjectGuid(guid: Guid) {
@@ -18,8 +23,11 @@ export default class ProjectRepository extends BaseRepository {
         return ind > -1 ? this.mockProjects[ind] : null
     }
 
-    async addProject(project: Project) {
-        this.mockProjects.push(project)
+    async addProject(projectToInsert: Project) {
+        const db = await this.getDb()
+        const project = this.builder.exportToSchema(projectToInsert) 
+        console.log(project)
+        db.projects.insert(project)
     }
 
     async updateProject(project: Project) {
