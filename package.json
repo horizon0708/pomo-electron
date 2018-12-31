@@ -20,6 +20,7 @@
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-scripts": "2.1.2",
+    "reflect-metadata": "^0.1.12",
     "rxdb": "^8.0.4",
     "rxjs": "^6.3.3",
     "typescript": "3.2.2",

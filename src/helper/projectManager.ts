@@ -14,7 +14,7 @@ export default class ProjectManager extends BaseManager{
     @observable allProjects: Project[] = []
 
     @observable editingProject = new Project("")
-    editor = new SubmitHelper()
+    editor = new SubmitHelper<Project>()
 
     constructor(config: PomoConfig, projectRepo: ProjectRepository, pomoRepo: PomoRepository) {
         super() 
@@ -28,12 +28,12 @@ export default class ProjectManager extends BaseManager{
 
  
 
-    addNew(projectName: string) {
-        let project = new Project(projectName)
-
-        //TODO: randomise color?
-
-        this.projectRepo.addProject(project)
+    async addNew() {
+        let project = this.editingProject
+        return this.editor.submit(this.projectRepo.addProject(project))
+            .then(r=> Promise.resolve(r))
+            .catch((e)=> Promise.reject(e))
+            .finally(()=> this.editingProject = new Project(""))
     }
 
     add(project: Project) {

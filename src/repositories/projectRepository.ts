@@ -26,8 +26,9 @@ export default class ProjectRepository extends BaseRepository {
     async addProject(projectToInsert: Project) {
         const db = await this.getDb()
         const project = this.builder.exportToSchema(projectToInsert) 
-        console.log(project)
-        db.projects.insert(project)
+        return db.projects.insert(project)
+        .then(()=>Promise.resolve(projectToInsert))
+        .catch(()=>Promise.reject(new Error("db insert error")))
     }
 
     async updateProject(project: Project) {
