@@ -26,7 +26,6 @@ export class ValidationOption<T> {
     constructor(fieldName: keyof T, _callback: (x: any) => boolean, o: T, callbackInput: any) {
         this.fieldName = fieldName
         this.callback = this.attachType(callbackInput, _callback)
-
         if (o.hasOwnProperty(fieldName)) {
             if (typeof o[fieldName] === this.type) {
                 this.isValid = this.callback(callbackInput)
@@ -43,9 +42,16 @@ export class ValidationOption<T> {
     }
 }
 
-export type ValidationCallback<T> = {
-    [P in keyof T]?: (x:T[P]) => boolean
+export type ValidationCallbacks<T> = {
+    // [P in keyof T]?: (x:T[P]) => boolean
+    [P in keyof T]?: ValidationOpt<T, P>
 }
+
+export class ValidationOpt<T, K extends keyof T>  {
+    callback: (x:T[K]) => boolean = (x: T[K]) => true
+    message: string = ""
+}
+
 
 
 export default class ValidationBuilder<T>{
@@ -53,20 +59,19 @@ export default class ValidationBuilder<T>{
     private callbacks?: any
     private default = (x: any) => true
 
-    constructor(monitor: T, callbacks?: ValidationCallback<T>) {
+    constructor(monitor: T, callbacks?: ValidationCallbacks<T>) {
         this.obj = monitor
         this.callbacks = callbacks
     }
 
-    // can't ensure callbacks signature!
-
+    // TODO: refactor this
     buildValidator() {
         let output: any = {}
         for (let key in this.obj) {
             if (this.obj.hasOwnProperty(key)) {
                 let validator: ValidationOption<T>
-                if (this.callbacks.hasOwnProperty(key) && typeof this.callbacks[key] === "function") {
-                    validator = new ValidationOption<T>(key, this.callbacks[key], this.obj, this.obj[key])
+                if (this.callbacks.hasOwnProperty(key) ) {
+                    validator = new ValidationOption<T>(key, this.callbacks[key].callback, this.obj, this.obj[key])
                 } else {
                     validator = new ValidationOption<T>(key, this.default, this.obj, this.obj[key])
                 }
