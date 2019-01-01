@@ -1,93 +1,119 @@
 import "reflect-metadata"
-import { observable } from "mobx";
+import { observable, computed } from "mobx";
+import { SchemaProject } from "../stores/projectSchema";
 
-const TYPE_SUFFIX = "_TYPE"
+type ValidationCallback = (x: SchemaValue) => boolean
+type ConversionCallback = (x: string | number) => any
 
-type test = "id"
 
+export class ValidationObject {
+    callback: ValidationCallback
+    message: string = ""
 
-function getProperty<T, K extends keyof T>(o: T, name: K) {
-    return o[name]
+    constructor(callback: ValidationCallback, message: string) {
+        this.callback = callback
+        this.message = message
+    }
 }
 
-// function test<T>(o: T, input: keyof T) {
-//     type test = T[input] 
-//     return new ValidationOption<T, test>(input, (x:T[any])=>false)
-// }
 
-export class ValidationOption<T> {
+export interface ISchema {
+    [key: string]: SchemaValue
+}
+
+
+export type SchemaValue = string | number | boolean | string[] | number[] | boolean[]
+
+// actual. derive from schema instead
+export class FieldValidator<T extends ISchema>  {
     // cant ensure fieldname
-    fieldName?: keyof T
-    callback?: (x: any) => boolean
-    private type = ""
-    isValid = true
-    message = ""
+    @observable name: keyof T
+    @observable value: SchemaValue | null = null
 
-    constructor(fieldName: keyof T, _callback: (x: any) => boolean, o: T, callbackInput: any) {
-        this.fieldName = fieldName
-        this.callback = this.attachType(callbackInput, _callback)
-        if (o.hasOwnProperty(fieldName)) {
-            if (typeof o[fieldName] === this.type) {
-                this.isValid = this.callback(callbackInput)
-            } else {
-                this.callback = undefined
-                console.log("doesn't match")
+    validationCallbacks: ValidationObject[] = [new ValidationObject((x: SchemaValue) => true, "")]
+    conversionCallback?: (x: string | number | boolean) => any // maybe not the best place to put conversion call backs? typesafety?
+    @computed get isValid() {
+        if (!this.value) return false
+        return this.validationCallbacks.every(obj => {
+            if (!this.value) return false
+            return obj.callback(this.value)
+        })
+    }
+    @computed get validationMessages() {
+        if (!this.value) return []
+        return this.validationCallbacks.map(obj => {
+            if (this.value && !obj.callback(this.value)) {
+                return obj.message
             }
+            return null
+        }).filter(x=>x)
+    }
+
+
+    //decorate property to know what to copy 
+    constructor(name: keyof T, o: T, validationObjects?: ValidationObject[]) {
+        this.name = name
+        if (o.hasOwnProperty(name)) {
+            this.value = o[name]
+        }
+
+        if (validationObjects) {
+            this.validationCallbacks = validationObjects
         }
     }
 
-    attachType(x: any, cb: (x: any) => boolean) {
-        this.type = typeof x
-        return (x: any) => cb(x)
-    }
+    //maybe use reflection to get conversion Callback types
 }
 
-export type ValidationCallbacks<T> = {
+
+export type ModelValidator<T extends ISchema> = {
+    [P in keyof T]?: FieldValidator<T>
+}
+
+
+// Option
+export type ModelValidationOption<T extends ISchema> = {
     // [P in keyof T]?: (x:T[P]) => boolean
-    [P in keyof T]?: ValidationOpt<T, P>
+    [P in keyof T]?: FieldValidationOption<T, P>
 }
 
-export class ValidationOpt<T, K extends keyof T>  {
-    callback: (x:T[K]) => boolean = (x: T[K]) => true
-    message: string = ""
+export type FieldValidationOption<T, K extends keyof T> = {
+    validationObjects: ValidationObject[]
+    conversionCallback?: (x: string | number) => T[K] | null
 }
 
 
 
-export default class ValidationBuilder<T>{
+
+export default class ValidationBuilder<T extends ISchema>{
     private obj: T
-    private callbacks?: any
-    private default = (x: any) => true
+    private model?: ModelValidationOption<T>
 
-    constructor(monitor: T, callbacks?: ValidationCallbacks<T>) {
-        this.obj = monitor
-        this.callbacks = callbacks
+    constructor(obj: T, model: ModelValidationOption<T>) {
+        this.obj = obj
+        this.model = model
     }
 
     // TODO: refactor this
-    buildValidator() {
+    buildValidator(): ModelValidator<T> {
         let output: any = {}
         for (let key in this.obj) {
             if (this.obj.hasOwnProperty(key)) {
-                let validator: ValidationOption<T>
-                if (this.callbacks.hasOwnProperty(key) ) {
-                    validator = new ValidationOption<T>(key, this.callbacks[key].callback, this.obj, this.obj[key])
-                } else {
-                    validator = new ValidationOption<T>(key, this.default, this.obj, this.obj[key])
+                let validator: FieldValidator<T> = new FieldValidator<T>(key, this.obj)
+
+                // override with model
+                if (this.model && this.model.hasOwnProperty(key)) {
+                    const fieldOption = this.model[key]
+                    if (fieldOption) {
+                        validator.validationCallbacks = fieldOption.validationObjects
+                    }
                 }
-                if (validator.callback) {
-                    output[key] = validator
-                } else {
-                    output[key] = null
-                }
+                output[key] = validator
             } else {
                 console.error("validation logic for " + key + "was not provided")
             }
         }
         return output
     }
-
-
-
 
 }

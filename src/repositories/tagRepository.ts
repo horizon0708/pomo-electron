@@ -28,14 +28,14 @@ export default class TagRepository extends BaseRepository {
 
     async add(tag: Tag) {
         const db = await this.getDb()
-        const query = db.tags
+        return db.tags
             .insert(this.builder.exportToSchema(tag))
             .then(x => {
                 console.log(x.toJSON())
-                return Promise.resolve()
+                return Promise.resolve(tag)
             })
             .catch(x => {
-                return Promise.reject()
+                return Promise.reject(new Error(x))
             })
     }
 

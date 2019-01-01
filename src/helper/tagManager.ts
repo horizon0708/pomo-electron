@@ -8,7 +8,7 @@ export default class TagManager {
     @observable allCategories: Tag[] = []
 
     @observable editingTag: Tag = new Tag("")
-    tagEditor: SubmitHelper = new SubmitHelper() //tagSubmit
+    tagEditor: SubmitHelper<Tag> = new SubmitHelper<Tag>() //tagSubmit
 
     @observable editingCategory: Tag = new Tag("")
     tagRepo: TagRepository

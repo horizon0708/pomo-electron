@@ -1,44 +1,81 @@
-import ValidationBuilder, { ValidationOption, ValidationCallbacks } from "../helper/validationBuilder";
-import Tag from "../models/tag";
-import { Guid } from "guid-typescript";
-import "reflect-metadata"
-
-const testValid = new ValidationOption<Tag>("id", (x:any)=>false, new Tag(""), Guid.create())
-
-console.log(Reflect.getMetadata("foo",testValid, "baz"))
-
-// testValid.fieldName = "id"
-// testValid.callback = (id:string) => true
+import ValidationBuilder, { FieldValidator, ModelValidationOption, SchemaValue } from "../helper/validationBuilder";
+import { SchemaTag } from "../stores/tagSchema";
 
 
 
-const tag = new Tag("hi")
+const tag = new SchemaTag()
+tag.name = "test name"
 
-const opts: ValidationCallbacks<Tag> = {
-    id: {
-        callback: (x:Guid) => false,
-        message: "test"
+const simpleOpt= (output: boolean) => {
+    return {
+        name: {
+            validationObjects: [
+                {
+                    callback: (x: SchemaValue) => output,
+                    message: "hi"
+                }
+            ]
+        }
     }
 }
 
-const badOpts: ValidationCallbacks<Tag> = {
-    id: "test"
+const multipleCallbacks = (output1: boolean, output2: boolean) => {
+    return {
+        name: {
+            validationObjects: [
+                {
+                    callback: (x: SchemaValue) => output1,
+                    message: "1"
+                },
+                {
+                    callback: (x: SchemaValue) => output2,
+                    message: "2"
+                },
+                {
+                    callback: (x: SchemaValue) => output2,
+                    message: "3"
+                },
+            ]
+        }
+    }
 }
 
-let builder = new ValidationBuilder<Tag>(tag, opts) 
 
 
-test('test', () => {
-   const validator = builder.buildValidator()
-   console.log(validator)
-//    expect(validator.id).toBe(undefined)
-    expect(1).toBe(1)
+test('one callback > succeeds', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(true))
+    const validator = builder.buildValidator()
+    const name = validator && validator.name as FieldValidator<SchemaTag>
+    expect(name.value).toBe("test name")
+    expect(name.isValid).toBe(true)
+    expect(name.validationMessages).toEqual([])
 })
 
-// test('test2', () => {
-//     let builder = new ValidationBuilder<Tag>(tag, badOpts)
-//    const validator = builder.buildValidator()
-//    console.log(validator)
-//    expect(validator.id).toBe(undefined)
-//     expect(1).toBe(1)
-// })
+test('one callback > fails', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(false))
+    const validator = builder.buildValidator()
+    const name = validator && validator.name as FieldValidator<SchemaTag>
+    expect(name.value).toBe("test name")
+    expect(name.isValid).toBe(false)
+    expect(name.validationMessages).toEqual(["hi"])
+})
+
+test('multiple callbacks > two fails ', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, multipleCallbacks(true, false))
+    const validator = builder.buildValidator()
+    const name = validator && validator.name as FieldValidator<SchemaTag>
+    expect(name.value).toBe("test name")
+    expect(name.isValid).toBe(false)
+    expect(name.validationMessages).toEqual(["2", "3"])
+})
+
+test('multiple callbacks > all succeeds ', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, multipleCallbacks(true, true))
+    const validator = builder.buildValidator()
+    const name = validator && validator.name as FieldValidator<SchemaTag>
+    expect(name.value).toBe("test name")
+    expect(name.isValid).toBe(true)
+    expect(name.validationMessages).toEqual([])
+})
+
+

@@ -1,3 +1,5 @@
+import { ISchema, SchemaValue } from "../helper/validationBuilder";
+
 export const tagSchema = {
     title: "Tag Collection",
     description: "Tag Schema",
@@ -20,14 +22,15 @@ export const tagSchema = {
     }
 }
 
-export interface ISchemaTag {
+export interface ISchemaTag extends ISchema {
     id: string
     name: string
     color: string
     isTag: boolean
 }
 
-export class SchemaTag {
+export class SchemaTag implements ISchemaTag{
+    [key: string]: SchemaValue
     id: string = ""
     name: string = ""
     color: string  = ""
