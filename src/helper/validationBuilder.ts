@@ -46,7 +46,7 @@ export class FieldValidator<T extends ISchema>  {
                 return obj.message
             }
             return null
-        }).filter(x=>x)
+        }).filter(x => x)
     }
 
 
@@ -89,12 +89,11 @@ export default class ValidationBuilder<T extends ISchema>{
     private obj: T
     private model?: ModelValidationOption<T>
 
-    constructor(obj: T, model: ModelValidationOption<T>) {
+    constructor(obj: T, model?: ModelValidationOption<T>) {
         this.obj = obj
         this.model = model
     }
 
-    // TODO: refactor this
     buildValidator(): ModelValidator<T> {
         let output: any = {}
         for (let key in this.obj) {
@@ -116,4 +115,21 @@ export default class ValidationBuilder<T extends ISchema>{
         return output
     }
 
+    buildSchema(validationModel: ModelValidator<T>): T | null {
+        let output = { ...this.obj }
+        let unsafe = output as any
+        for (let key in output) {
+            if (output.hasOwnProperty(key) && validationModel.hasOwnProperty(key)) {
+                const cast = validationModel[key] as FieldValidator<T>
+                if(!cast.isValid) {
+                    console.log("not valid")
+                    return null
+                }
+                if (cast.value !== null) {
+                    unsafe[key]  = cast.value
+                }
+            }
+        }
+        return unsafe
+    }
 }

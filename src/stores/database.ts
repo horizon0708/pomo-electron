@@ -4,10 +4,11 @@ import Project, { ProjectStatus } from '../models/project';
 import { projectSchema } from './projectSchema';
 import { interruptionSchema } from './interruptionSchema';
 import ProjectBuilder from '../helper/projectBuilder';
-import { tagSchema } from './tagSchema';
+import { tagSchema, SchemaTag } from './tagSchema';
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-adapter-idb'));
 
+    RxDB.plugin(require('pouchdb-adapter-memory'));
 
 //need to be generated into public (or find a way to build electron into main?)
 //https://github.com/pubkey/rxdb/blob/master/examples/electron/database.js
@@ -93,10 +94,14 @@ export function getDatabase(name: string, adapter: string): Promise<RxDatabase> 
 
 
 export async function createDatabase(name: string, adapter: string) {
+    let _adapter = name !== "pomodb" ? "memory" : adapter
+
     const db = await RxDB.create({
         name,
-        adapter,
+        adapter: _adapter,
     })
+
+
 
     console.log('creating pomo collection...')
     await db.collection({
@@ -123,17 +128,17 @@ export async function createDatabase(name: string, adapter: string) {
         }
     )
 
-
-    const projects = db.projects.find().exec()
-    projects.then(x => {
-        if (x.length === 0) {
-            const pBuilder = new ProjectBuilder()
-            const seedProjects = [new Project("test1-m"), new Project("test2-m")]
-            seedProjects.forEach(x => {
-                db.projects.insert(pBuilder.exportToSchema(x))
+    if (name !== "pomodb") {
+        console.log(name)
+        const seedTags = [new SchemaTag(), new SchemaTag()]
+        seedTags.forEach(x => {
+            db.tags.insert(x).then(x=> {
+                // console.log(x.toJSON())
             })
-        }
-    })
+        })
+
+    }
+
 
 
     return db;

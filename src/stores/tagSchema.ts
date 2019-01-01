@@ -1,4 +1,5 @@
 import { ISchema, SchemaValue } from "../helper/validationBuilder";
+import { Guid } from "guid-typescript";
 
 export const tagSchema = {
     title: "Tag Collection",
@@ -31,9 +32,9 @@ export interface ISchemaTag extends ISchema {
 
 export class SchemaTag implements ISchemaTag{
     [key: string]: SchemaValue
-    id: string = ""
-    name: string = ""
-    color: string  = ""
+    id: string = Guid.create().toString()
+    name: string = "Unnamed Tag"
+    color: string  = "red"
     isTag = true
 }
 

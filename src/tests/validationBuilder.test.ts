@@ -6,7 +6,7 @@ import { SchemaTag } from "../stores/tagSchema";
 const tag = new SchemaTag()
 tag.name = "test name"
 
-const simpleOpt= (output: boolean) => {
+const simpleOpt = (output: boolean) => {
     return {
         name: {
             validationObjects: [
@@ -79,3 +79,19 @@ test('multiple callbacks > all succeeds ', () => {
 })
 
 
+test('build schema > success', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(true))
+    const validator = builder.buildValidator()
+    const output = builder.buildSchema(validator) as SchemaTag
+    expect(output.name).toEqual("test name")
+    expect(output.id).not.toBeNull()
+    expect(output.isTag).toEqual(true)
+    expect(output.color).toEqual("red")
+})
+
+test('build schema > fail', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(false))
+    const validator = builder.buildValidator()
+    const output = builder.buildSchema(validator) as SchemaTag
+    expect(output).toBeNull()
+})
