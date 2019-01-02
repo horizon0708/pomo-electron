@@ -1,4 +1,4 @@
-import { schemaPomo, schemaTimestamp,   } from "../stores/database";
+import { ISchemaPomo, schemaTimestamp,   } from "../stores/database";
 import { Pomo, PomoTimestamp, PomoStatus } from "../models/pomo";
 import { Guid } from "guid-typescript";
 import { string } from "prop-types";
@@ -39,7 +39,7 @@ export default class PomoBuilder {
         return undefined
     }
 
-    buildFromSchema(item: schemaPomo): Pomo {
+    buildFromSchema(item: ISchemaPomo): Pomo {
         let pomo = new Pomo()
         pomo.id = Guid.parse(item.id)
         pomo.timestamp = item.timestamp && this.convertTimestampFromDB(item.timestamp)
@@ -54,7 +54,7 @@ export default class PomoBuilder {
         return pomo
     }
 
-    exportToSchema(pomo: Pomo): schemaPomo {
+    exportToSchema(pomo: Pomo): ISchemaPomo {
         return {
             id: pomo.id && pomo.id.toString() || "error",
             timestamp: this.convertTimestampForDB(pomo.timestamp),

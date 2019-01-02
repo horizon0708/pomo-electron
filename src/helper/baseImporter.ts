@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { serializationMetadataKey } from './serializationDecorators';
+import { SERIALIZE_METADATA } from './serializationDecorators';
 
 export default interface ISerializer<S, M> {
     import(schema: S) :M
@@ -30,11 +30,12 @@ export class BaseSerializer<S, M> implements ISerializer<S, M> {
     import(schema: S): M {
         let output = {...this.model}
         for(let key in output) {
-            if(schema.hasOwnProperty(key) && output.hasOwnProperty(key)){
+            if(schema && schema.hasOwnProperty(key) && output.hasOwnProperty(key)){
                 const schemaMetadata = Reflect.getMetadata("design:type", schema, key)
                 const modelMetadata = Reflect.getMetadata("design:type", this.model, key)
                 const schemaType = schemaMetadata && schemaMetadata.name
                 const modelType = modelMetadata && modelMetadata.name
+                // console.log(key + "-->" + modelType)
                 // check for option
                 if(this.options && this.options.hasOwnProperty(key)) {
                     //the output practically has to be T[P] as this.optionss is typeof SerializeCallback
@@ -44,8 +45,8 @@ export class BaseSerializer<S, M> implements ISerializer<S, M> {
                 } else if(
                     (modelType === "Number" ||
                     modelType === "String" ||
-                    modelType === "Boolean" ||
-                    modelType === "Array") &&
+                    modelType === "Boolean" 
+                    ) &&
                     modelType=== schemaType
                 ){ 
                     (output as any)[key] =  (schema as any)[key]

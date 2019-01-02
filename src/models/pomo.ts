@@ -4,16 +4,16 @@ import Project from "./project";
 import PomoInterruption from "./pomoInterruption";
 
 export class Pomo {
-    @observable public id: Guid
+    @observable public id: string
     @observable public timestamp: PomoTimestamp
-    @observable public breakTimestamp?: PomoTimestamp
+    @observable public breakTimestamp: PomoTimestamp | null = null
     @observable public pauseTimestamps: PomoTimestamp[]
-    @observable public project?: Guid
+    @observable public project: Project | null = null
     @observable public status: PomoStatus
     @observable public currentTime: number
     @observable public previousStatus: PomoStatus
     @observable public rating: number
-    @observable public interruptions: Guid[] = []
+    @observable public interruptions: PomoInterruption[] = []
 
     @computed get workDurations() {
         if (this.pauseTimestamps.length > 0) {
@@ -33,11 +33,10 @@ export class Pomo {
         return 0
     }
 
-    constructor(startingProject?: Guid) {
-        this.id = Guid.create()
+    constructor() {
+        this.id = Guid.create().toString()
         this.timestamp = new PomoTimestamp()
         this.pauseTimestamps = []
-        this.project = startingProject 
         this.status = PomoStatus.start
         this.previousStatus = this.status
         this.currentTime = 0

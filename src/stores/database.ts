@@ -1,10 +1,14 @@
 import RxDB, { RxDatabase } from 'rxdb'
 import { PomoStatus } from '../models/pomo';
 import Project, { ProjectStatus } from '../models/project';
-import { projectSchema } from './projectSchema';
-import { interruptionSchema } from './interruptionSchema';
+import { projectSchema, SchemaProject } from './projectSchema';
+import { interruptionSchema, reasonSchema, schemaInterruption } from './interruptionSchema';
 import ProjectBuilder from '../helper/projectBuilder';
 import { tagSchema, SchemaTag } from './tagSchema';
+import { serialize, foreignKey } from '../helper/serializationDecorators';
+import { ISchema } from '../helper/validationBuilder';
+import { Guid } from 'guid-typescript';
+import { C_PROJECTS, C_INTERRUPTIONS, C_POMOS, C_TAGS, C_REASONS } from '../constants/databaseConstants';
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-adapter-idb'));
 
@@ -29,22 +33,35 @@ export interface schemaTimestamp {
     endTime: string;
 }
 
-export interface schemaPomo {
+export interface ISchemaPomo extends ISchema {
     id: string
     timestamp: schemaTimestamp
     breakTimestamp?: schemaTimestamp
-    pauseTimestamps?: schemaTimestamp[]
-    project?: string
+    pauseTimestamps: schemaTimestamp[]
+    project?: SchemaProject
     status: number
     currentTime: number
     previousStatus: number
     rating: number
-    interruptions: string[]
+    interruptions: schemaInterruption[]
+}
+
+export class SchemaPomo implements ISchemaPomo{
+    @serialize id: string = Guid.create().toString()
+    @serialize timestamp: schemaTimestamp = { startTime: new Date().toString(), endTime: new Date().toString()}
+    @serialize breakTimestamp?: schemaTimestamp | undefined
+    @serialize pauseTimestamps: schemaTimestamp[] = []
+    @foreignKey(C_PROJECTS) @serialize project?: SchemaProject | undefined = undefined
+    @serialize status: number = 0
+    @serialize currentTime: number = 0
+    @serialize previousStatus: number =0
+    @serialize rating: number = 3
+    @foreignKey(C_INTERRUPTIONS) @serialize interruptions: schemaInterruption[] = []
 }
 
 
 
-const PomoSchema = {
+export const PomoSchema = {
     title: "Pomo Collection",
     description: "Pomo Schema",
     version: 0,
@@ -58,9 +75,10 @@ const PomoSchema = {
         breakTimestamp: _pomoTimestamp,
         pauseTimestamps: {
             type: 'array',
-            item: _pomoTimestamp
+            items: _pomoTimestamp
         },
         project: {
+            ref: C_PROJECTS,
             type: 'string'
         },
         status: {
@@ -75,7 +93,8 @@ const PomoSchema = {
         },
         interruptions: {
             type: 'array',
-            item: {
+             ref: C_INTERRUPTIONS,
+            items: {
                 type: "string"
             }
         },
@@ -103,40 +122,60 @@ export async function createDatabase(name: string, adapter: string) {
 
 
 
-    console.log('creating pomo collection...')
+    console.log('creating collections...')
+
     await db.collection({
-        name: "pomos",
+        name: C_POMOS,
         schema: PomoSchema
     })
 
     await db.collection({
-        name: "projects",
+        name: C_PROJECTS,
         schema: projectSchema
     })
 
     await db.collection(
         {
-            name: "interruptions",
+            name: C_INTERRUPTIONS,
             schema: interruptionSchema
         }
     )
 
     await db.collection(
         {
-            name: "tags",
+            name: C_TAGS,
             schema: tagSchema
         }
     )
 
+    await db.collection(
+        {
+            name: C_REASONS,
+            schema: reasonSchema
+        }
+    )
+
+
     if (name !== "pomodb") {
         console.log(name)
-        const seedTags = [new SchemaTag(), new SchemaTag()]
+        const projectTag = new SchemaTag()
+        projectTag.id = "tag1"
+        const projectTagTwo = new SchemaTag()
+        projectTagTwo.id = "tag2"
+        const seedTags = [projectTag, projectTagTwo]
         seedTags.forEach(x => {
-            db.tags.insert(x).then(x=> {
-                // console.log(x.toJSON())
+            db[C_TAGS].insert(x).then(x=> {
+                console.log(x.toJSON())
             })
         })
 
+        const seedProject = new SchemaProject()
+        seedProject.id = "seed1"
+        seedProject.tags =["tag1"]
+        seedProject.category = "tag2"
+        db[C_PROJECTS].insert(seedProject).then(x=> {
+            console.log((x:any)=>x.toJSON())
+        })
     }
 
 

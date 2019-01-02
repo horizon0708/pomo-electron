@@ -1,15 +1,17 @@
 import { Guid } from "guid-typescript";
+import { observable } from "mobx";
 
 export default class PomoInterruption {
-    id: Guid = Guid.create()
-    reason?: Guid  
-    note: string = ""
-    timestamp: Date = new Date()
+    @observable id: string = Guid.create().toString()
+    @observable reason?: PomoInterruptionReason  
+    @observable note: string = ""
+    @observable timestamp: Date = new Date()
 }
 
 export class PomoInterruptionReason {
-    id: Guid = Guid.create()
-    name: string = "" 
+    @observable id: string = Guid.create().toString()
+    @observable name: string = "" 
+    @observable color: string = "red"
 
     constructor(name: string) {
         this.name = name

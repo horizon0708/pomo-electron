@@ -7,6 +7,7 @@ export default class Tag {
     @serialize name: string = "unnamed tag"
     @serialize color: string = "red"
     @serialize isTag: boolean = true
+    @serialize isProject: boolean = true
 
     constructor(name: string) {
         this.name = name

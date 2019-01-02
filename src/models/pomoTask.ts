@@ -5,14 +5,14 @@ import { Pomo } from "./pomo";
 import Project from "./project";
 
 export default class PomoTask {
-    @observable id = Guid.create().toString
+    @observable id: string = Guid.create().toString()
     @observable pomos: Pomo[] = [] 
     @observable project: Project | null = null
-    @observable name = "Unnamed Task"
-    @observable created = Date.now()
+    @observable name: string = "Unnamed Task"
+    @observable created: Date = new Date()
     @observable tags: Tag[] = []
     @observable category: Tag | null = null
     @observable note: string = ""
-    @observable isDone = false
-    @observable isHidden = false
+    @observable isDone :boolean= false
+    @observable isHidden:boolean = false
 }

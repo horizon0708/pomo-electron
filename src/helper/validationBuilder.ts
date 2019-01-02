@@ -24,7 +24,7 @@ export interface ISchema {
 }
 
 
-export type SchemaValue = string | number | boolean | string[] | number[] | boolean[]
+export type SchemaValue = any
 
 // actual. derive from schema instead
 export class FieldValidator<T extends ISchema>  {

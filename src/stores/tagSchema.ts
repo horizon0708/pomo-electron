@@ -22,6 +22,9 @@ export const tagSchema = {
         },
         isTag: {
             type: "boolean"
+        },
+        isProject: {
+            type: "boolean"
         }
     }
 }
@@ -31,6 +34,7 @@ export interface ISchemaTag extends ISchema {
     name: string
     color: string
     isTag: boolean
+    isProject: boolean
 }
 export class SchemaTag implements ISchemaTag{
     [key: string]: SchemaValue
@@ -49,5 +53,7 @@ export class SchemaTag implements ISchemaTag{
     @serialize
     isTag: boolean = true
 
+    @serialize
+    isProject: boolean = true
 }
 

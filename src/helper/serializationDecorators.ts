@@ -1,7 +1,8 @@
 import 'reflect-metadata'
 import 'core-js/es7/reflect';
 
-export const serializationMetadataKey = "serialization:type"
+export const SERIALIZE_METADATA = "serialization:type"
+export const FOREIGN_KEY_METADATA = "serialization:foreignKey"
 
 export function serialize(target: any, key: string) {
     // Reflect.getMetadata("design:type", target, key)
@@ -13,6 +14,11 @@ export function serialize(target: any, key: string) {
     // console.log(Reflect.getMetadataKeys(target))
 }
 
+export function foreignKey(collection: string) {
+    return function (target: any, key: string) {
+        Reflect.defineMetadata(FOREIGN_KEY_METADATA, { key, collection}, target, key)
+    }
+}
 
 
     // Reflect.defineMetadata(serializationMetadataKey, "type", target, key)

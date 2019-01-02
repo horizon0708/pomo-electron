@@ -6,6 +6,7 @@ import SubmitHelper from "./submitHelper";
 import BaseBuilder from "./BaseBuilder";
 import BaseImporter, { BaseSerializer } from "./baseImporter";
 import ISerializer from "./baseImporter";
+import { RxDocument } from "rxdb";
 
 
 export interface ManagerOption<M, S extends ISchema> {
@@ -16,7 +17,7 @@ export default class BaseManager<M, S extends ISchema> {
     @observable queryResult: M[] = []
     @observable current: ModelValidatorType<S>
 
-    private repo: BaseRepository<M, S>
+    repo: BaseRepository<M, S>
     private subscription?: Subscription
     private importer: ISerializer<S, M>
     private builder: ValidationBuilder<S>
@@ -39,10 +40,10 @@ export default class BaseManager<M, S extends ISchema> {
             this.subscription.unsubscribe()
         }
         const sub = await this.repo.get(queryObj)
-
         this.subscription = sub.subscribe(res => {
-            const json = res.map(r => r.toJSON())
-            this.queryResult = json.map((x: any) => this.importer.import(x))
+            
+            // const json = res.map(r => r.toJSON())
+            // this.queryResult = json.map((x: any) => this.importer.import(x))
         })
     }
 
