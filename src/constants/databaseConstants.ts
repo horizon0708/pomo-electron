@@ -9,3 +9,8 @@ export const C_INTERRUPTIONS = "interruptions_collection"
 export const C_TAGS = "tags_collection"
 export const C_REASONS = "reasons_collection"
 export const C_TASKS = "tasks_collection" 
+
+export let IOC = {
+    baseRepo: Symbol("BaseRepository"),
+    projectSerializer: Symbol("ProjectSerializor")
+}

@@ -10,6 +10,7 @@
     "@types/react-dom": "16.0.11",
     "babel-polyfill": "^6.26.0",
     "guid-typescript": "^1.0.9",
+    "inversify": "^5.0.1",
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
     "pouchdb-adapter-http": "^7.0.0",
