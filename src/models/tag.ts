@@ -1,11 +1,12 @@
 import { Guid } from "guid-typescript";
 import { observable } from "mobx";
+import { serialize } from "../helper/serializationDecorators";
 
 export default class Tag {
-    @observable id: Guid = Guid.create()
-    @observable name: string = "unnamed tag"
-    @observable color: string = "red"
-    @observable isTag: boolean = true
+    @serialize id: string = Guid.create().toString()
+    @serialize name: string = "unnamed tag"
+    @serialize color: string = "red"
+    @serialize isTag: boolean = true
 
     constructor(name: string) {
         this.name = name

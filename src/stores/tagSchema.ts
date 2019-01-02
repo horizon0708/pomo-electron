@@ -1,5 +1,8 @@
 import { ISchema, SchemaValue } from "../helper/validationBuilder";
 import { Guid } from "guid-typescript";
+import { notEditable } from "../helper/validationDecorator";
+import { serialize  } from "../helper/serializationDecorators";
+import 'reflect-metadata'
 
 export const tagSchema = {
     title: "Tag Collection",
@@ -29,12 +32,22 @@ export interface ISchemaTag extends ISchema {
     color: string
     isTag: boolean
 }
-
 export class SchemaTag implements ISchemaTag{
     [key: string]: SchemaValue
+
+    @serialize 
+    @notEditable
     id: string = Guid.create().toString()
+    
+    @serialize
     name: string = "Unnamed Tag"
+
+    @serialize
     color: string  = "red"
-    isTag = true
+
+    @notEditable
+    @serialize
+    isTag: boolean = true
+
 }
 

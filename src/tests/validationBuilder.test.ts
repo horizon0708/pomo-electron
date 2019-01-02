@@ -40,7 +40,26 @@ const multipleCallbacks = (output1: boolean, output2: boolean) => {
     }
 }
 
+test('editing notEditable field does not work', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(true))
+    const validator = builder.buildValidator()
+    const id = validator && validator.id as FieldValidator<SchemaTag>
+    id.value = "invalidId"
+    expect(id.value).not.toEqual("invalidId")
+    expect(id.value).not.toBeUndefined()
+    expect(id.isValid).toBe(true)
+    expect(id.validationMessages).toEqual([])
+})
 
+test('editing normal field works', () => {
+    let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(true))
+    const validator = builder.buildValidator()
+    const name = validator && validator.name as FieldValidator<SchemaTag>
+    name.value = "valid name"
+    expect(name.value).toBe("valid name")
+    expect(name.isValid).toBe(true)
+    expect(name.validationMessages).toEqual([])
+})
 
 test('one callback > succeeds', () => {
     let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(true))
@@ -79,19 +98,24 @@ test('multiple callbacks > all succeeds ', () => {
 })
 
 
-test('build schema > success', () => {
+test('build schema > success', done => {
     let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(true))
     const validator = builder.buildValidator()
-    const output = builder.buildSchema(validator) as SchemaTag
-    expect(output.name).toEqual("test name")
-    expect(output.id).not.toBeNull()
-    expect(output.isTag).toEqual(true)
-    expect(output.color).toEqual("red")
+    builder.buildSchema(validator).then(res => {
+        expect(res.name).toEqual("test name")
+        expect(res.id).not.toBeNull()
+        expect(res.isTag).toEqual(true)
+        expect(res.color).toEqual("red")
+        done()
+    })
 })
 
-test('build schema > fail', () => {
+test('build schema > fail', async () => {
     let builder = new ValidationBuilder<SchemaTag>(tag, simpleOpt(false))
     const validator = builder.buildValidator()
-    const output = builder.buildSchema(validator) as SchemaTag
-    expect(output).toBeNull()
+    try {
+        await builder.buildSchema(validator)
+    } catch(e) {
+        expect(e).toEqual(new Error("Build cancelled: There are invalid fields"))
+    }
 })

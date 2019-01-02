@@ -1,31 +1,36 @@
 import { Observable, Subscription } from "rxjs";
 import { observable, action } from "mobx";
 import BaseRepository from "../repositories/BaseRepository";
-import ValidationBuilder, { ISchema, ModelValidationOption, ModelValidator, FieldValidator } from "./validationBuilder";
+import ValidationBuilder, { ISchema, ModelValidationOption, ModelValidatorType, FieldValidator } from "./validationBuilder";
 import SubmitHelper from "./submitHelper";
 import BaseBuilder from "./BaseBuilder";
-import BaseImporter from "./baseImporter";
+import BaseImporter, { BaseSerializer } from "./baseImporter";
+import ISerializer from "./baseImporter";
 
 
 export interface ManagerOption<M, S extends ISchema> {
     validationConfig?: ModelValidationOption<S>
-    builder?: BaseImporter<S, M>
 }
 
 export default class BaseManager<M, S extends ISchema> {
     @observable queryResult: M[] = []
-    @observable current: ModelValidator<S>
+    @observable current: ModelValidatorType<S>
 
     private repo: BaseRepository<M, S>
     private subscription?: Subscription
-    private importer: BaseImporter<S, M>
+    private importer: ISerializer<S, M>
     private builder: ValidationBuilder<S>
 
-    constructor(repo: BaseRepository<M, S>, schemaObj: S, modelObj: M, opt?: ManagerOption<M, S>) {
+    constructor(
+        repo: BaseRepository<M, S>, 
+        schemaObj: S, 
+        modelObj: M, 
+        importer?: ISerializer<S, M>, 
+        opt?: ManagerOption<M, S>) {
         this.repo = repo
         this.builder = new ValidationBuilder<S>(schemaObj, opt && opt.validationConfig)
         this.current = this.builder.buildValidator()
-        this.importer = opt && opt.builder ? opt.builder : new BaseImporter<S, M>(modelObj)
+        this.importer = importer ? importer : new BaseSerializer<S, M>(schemaObj,modelObj)
         this.startSubscription({})
     }
 
@@ -42,7 +47,7 @@ export default class BaseManager<M, S extends ISchema> {
     }
 
     // not sure how I could test the observable values in Jest, so test stream separately for now
-     getSubscriptionForTesting(queryObj: any) {
+    getSubscriptionForTesting(queryObj: any) {
         return this.repo.get(queryObj)
     }
 
@@ -57,12 +62,10 @@ export default class BaseManager<M, S extends ISchema> {
     }
 
     async add() {
-        const itemToAdd = this.builder.buildSchema(this.current)
-        if (itemToAdd !== null) {
-            this.repo.add(itemToAdd).then(_ => Promise.resolve())
+        this.builder.buildSchema(this.current).then(res => {
+            this.repo.add(res).then(r => Promise.resolve(r))
                 .catch(e => Promise.reject(new Error(e)))
-        } else {
-            Promise.reject(new Error("Invalid"))
-        }
+        })
+
     }
 }

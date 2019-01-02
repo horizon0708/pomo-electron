@@ -26,7 +26,6 @@ test("get > all things", async done => {
     const sub = await manager.getSubscriptionForTesting({})
     sub.subscribe(res=>{
         const json = res.map(r =>r.toJSON())
-        console.log(json)
         done()
     })
 

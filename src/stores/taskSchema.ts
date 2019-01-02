@@ -20,14 +20,14 @@ export const taskSchema = {
     }
 }
 
-export interface ISchemaTag {
+export interface ISchemaTask {
     id: string
     name: string
     color: string
     isTag: boolean
 }
 
-export class SchemaTag {
+export class SchemaTask {
     id: string = ""
     name: string = ""
     color: string  = ""

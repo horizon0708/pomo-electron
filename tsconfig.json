@@ -18,7 +18,8 @@
     "noEmit": true,
     "jsx": "preserve",
     "isolatedModules": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": [
     "src"
