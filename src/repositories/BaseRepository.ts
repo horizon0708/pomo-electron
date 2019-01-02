@@ -4,19 +4,21 @@ import BaseImporter from "../helper/baseImporter";
 import RxDB, { RxDatabase } from 'rxdb'
 import { FOREIGN_KEY_METADATA } from "../helper/serializationDecorators";
 import { map, mergeMap } from "rxjs/operators";
+import { injectable } from "inversify";
 RxDB.plugin(require('pouchdb-adapter-http'));
 RxDB.plugin(require('pouchdb-adapter-idb'));
 
+@injectable()
 export default class BaseRepository<M, S extends ISchema> {
     private _db?: RxDatabase
     private dbName = "pomodb"
     private collectionName: string
-    private schema: S
+    // private schema: S
 
-    constructor(collectionName: string, schema: S, dbName?: string) {
+    constructor(collectionName: string, dbName?: string) {
         if (dbName) this.dbName = dbName
         this.collectionName = collectionName
-        this.schema = schema
+        // this.schema = schema
     }
 
     async getDb() {

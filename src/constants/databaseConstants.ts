@@ -12,5 +12,13 @@ export const C_TASKS = "tasks_collection"
 
 export let IOC = {
     baseRepo: Symbol("BaseRepository"),
-    projectSerializer: Symbol("ProjectSerializor")
+    tagRepo: Symbol("TagRepo"),
+    pomoRepo: Symbol("pomoRepo"),
+    projectRepo: Symbol("TagRepo"),
+    interruptionRepo: Symbol("interruptionRepo"),
+    reasonRepo: Symbol("ReasonRepo"),
+    taskRepo: Symbol("TaskRepo"),
+
+    projectSerializer: Symbol("ProjectSerializor"),
+    tagSerializer: Symbol("TagSerializerFactory")
 }

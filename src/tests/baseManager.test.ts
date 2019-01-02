@@ -21,7 +21,7 @@ let manager: BaseManager<Project, SchemaProject>
 // })
 
 beforeAll(async () => {
-    repo = new BaseRepository<Project, SchemaProject>(C_PROJECTS, new SchemaProject(), "testdb")
+    repo = new BaseRepository<Project, SchemaProject>(C_PROJECTS, "testdb")
     manager = new BaseManager<Project, SchemaProject>(repo, schema, model, getProjectBuilder())
 })
 
