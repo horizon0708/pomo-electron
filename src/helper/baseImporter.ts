@@ -1,4 +1,3 @@
-import 'reflect-metadata'
 import { SERIALIZE_METADATA } from './serializationDecorators';
 
 export default interface ISerializer<S, M> {

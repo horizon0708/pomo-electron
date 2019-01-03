@@ -2,7 +2,6 @@ import { ISchema, SchemaValue } from "../helper/validationBuilder";
 import { Guid } from "guid-typescript";
 import { notEditable } from "../helper/validationDecorator";
 import { serialize  } from "../helper/serializationDecorators";
-import 'reflect-metadata'
 
 export const tagSchema = {
     title: "Tag Collection",

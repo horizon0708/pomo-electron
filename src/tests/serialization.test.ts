@@ -1,13 +1,13 @@
 import Tag from "../models/tag";
 import { BaseSerializer, SerializeCallbacks } from "../helper/baseImporter";
 import { serialize } from "../helper/serializationDecorators";
-import 'reflect-metadata'
 import { SchemaTag } from "../stores/tagSchema";
 import { Pomo } from "../models/pomo";
 import { SchemaPomo } from "../stores/database";
 import { toPomoTimestamp, toTag, toProject } from "../helper/serializationCallbacks";
 import { SchemaProject } from "../stores/projectSchema";
 import Project from "../models/project";
+import 'reflect-metadata'
 
 describe("simple serialization", () => {
     const model = new Tag("asdf")

@@ -1,8 +1,8 @@
-import "reflect-metadata"
 import { observable, computed, action } from "mobx";
 import { SchemaProject } from "../stores/projectSchema";
 import { notEditableMetadatakey } from "./validationDecorator";
 import { isNullOrUndefined } from "util";
+import { injectable } from "inversify";
 
 export type ValidationCallback = (x: SchemaValue) => boolean
 export type ConstraintCallback = (x: SchemaValue) => SchemaValue
@@ -130,7 +130,7 @@ export type FieldValidationOption<T> = {
 
 
 
-
+@injectable()
 export default class ValidationBuilder<T extends ISchema>{
     private obj: T
     private model?: ModelValidationOption<T>

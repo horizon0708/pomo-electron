@@ -1,6 +1,4 @@
 import 'reflect-metadata'
-import 'core-js/es7/reflect';
-
 export const SERIALIZE_METADATA = "serialization:type"
 export const FOREIGN_KEY_METADATA = "serialization:foreignKey"
 

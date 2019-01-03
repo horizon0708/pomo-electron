@@ -63,37 +63,29 @@ export default class BaseRepository<M, S extends ISchema> {
 
     async get(queryObj: any) {
         const db = await this.getDb()
+        return db[this.collectionName]        
+            .find(queryObj).$
 
-        return db[this.collectionName]
-            .find(queryObj).$.pipe(mergeMap(items => {
-                // console.log(items)
-                const promises = items.map(item => [item.tags_, item.category_])
-                const flattened: any[] = ([] as any).concat(...promises)
-                const jsons = items.map(item => item.toJSON())
-                return Promise.all(flattened)
-                .then(res => {
-                    let counter = 0  
-                    jsons.forEach(j => {
-                        j.tags = res[counter].map((a: any) => a.toJSON())
-                        counter++
-                        j.category = res[counter].toJSON()
-                        counter++
-                    })
-                    return jsons 
-                })
+        // return db[this.collectionName]
+        //     .find(queryObj).$.pipe(mergeMap(items => {
+        //         // console.log(items)
+        //         const promises = items.map(item => [item.tags_, item.category_])
+        //         const flattened: any[] = ([] as any).concat(...promises)
+        //         const jsons = items.map(item => item.toJSON())
+        //         return Promise.all(flattened)
+        //         .then(res => {
+        //             let counter = 0  
+        //             jsons.forEach(j => {
+        //                 j.tags = res[counter].map((a: any) => a.toJSON())
+        //                 counter++
+        //                 j.category = res[counter].toJSON()
+        //                 counter++
+        //             })
+        //             return jsons 
+        //         })
 
-                //     // const test = await item.populate("tag")
-                //     let output = item.toJSON()
-                //     return Promise.all([
-                //         item.tags_,
-                //         item.category_
-                //     ]).then(res => {
-                //         output.tags = res[0].map((a:any)=>a.toJSON())
-                //         output.category = res[1].toJSON()
-                //         return output
-                //     })
-                // })
-            }))
+       
+        //     }))
     }
 
     async update(item: S): Promise<S> {
